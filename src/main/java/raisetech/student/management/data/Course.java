@@ -1,6 +1,7 @@
 package raisetech.student.management.data;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.time.LocalDate;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,10 +11,10 @@ import lombok.Setter;
 
 public class Course {
 
-  private String id;
-  private String studentId;
+  private Integer id;
+  private Integer studentId;
   private String courseName;
-  private String courseStartAt;
-  private String courseEndAt;
+  private LocalDate courseStartAt;
+  private LocalDate courseEndAt;
 
 }

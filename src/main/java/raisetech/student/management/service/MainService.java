@@ -33,8 +33,6 @@ public class MainService {
     this.converter = converter;
   }
 
-
-
   /**
    * 受講生詳細の一覧検索を行います。
    * 全件検索を行うので、条件指定は行いません。
@@ -52,7 +50,7 @@ public class MainService {
     if (studentList == null || studentList.isEmpty()) {
       return converter.convertDetails(studentList, Collections.emptyList(), Collections.emptyList());
     }
-    List<String> studentIdList = studentList.stream()
+    List<Integer> studentIdList = studentList.stream()
         .map(student -> student.getId())
         .toList();
     List<Course> courseList = repository.searchCoursesByStudentId(studentIdList);
@@ -67,7 +65,7 @@ public class MainService {
    * @param id　受講生ID
    * @return　受講生詳細
    */
-  public StudentDetail searchStudentId(String id) {
+  public StudentDetail searchStudentId(Integer id) {
     Student student = repository.fetchById(id);
     if (student == null) {
       return null;
@@ -78,7 +76,7 @@ public class MainService {
         ? Collections.emptyList()
         : fetchedCourseList;
 
-    List<String> courseIdList =  courseList.stream()
+    List<Integer> courseIdList =  courseList.stream()
         .map(course -> course.getId())
         .collect(Collectors.toList());
     List<ApplicationStatus> statusList = (courseIdList.isEmpty())
@@ -152,7 +150,7 @@ public class MainService {
    */
   void initStudentCourse(Course course, Student student) {
     course.setStudentId(student.getId());
-    course.setCourseStartAt(String.valueOf(LocalDate.now()));
+    course.setCourseStartAt(LocalDate.now());
   }
 }
 

@@ -47,13 +47,13 @@ class MainControllerTest {
   private Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
   /**
-   * studentList 200 test
+   * /students 200 test
    *
    * @throws Exception
    */
   @Test
   void 受講生詳細の一覧検索が実行できて空のリストが返ってくること() throws Exception {
-    mockMvc.perform(MockMvcRequestBuilders.get("/studentList"))
+    mockMvc.perform(MockMvcRequestBuilders.get("/students"))
         .andExpect(status().isOk());
 
     verify(service, times(1)).searchStudentList(
@@ -61,14 +61,14 @@ class MainControllerTest {
   }
 
   /**
-   * studentList 500 test
+   * /students 500 test
    */
   @Test
   void 受講生詳細の一覧検索が内部エラー発生すること() throws Exception {
     when(service.searchStudentList(null, null, null, null, null))
         .thenThrow(new RuntimeException("内部サーバー エラーが発生しました。"));
 
-    mockMvc.perform(MockMvcRequestBuilders.get("/studentList"))
+    mockMvc.perform(MockMvcRequestBuilders.get("/students"))
         .andExpect(status().isInternalServerError());
 
     verify(service, times(1)).searchStudentList(
@@ -76,12 +76,12 @@ class MainControllerTest {
   }
 
   /**
-   * student/{id} correct input test 200
+   * /student/{id} correct input test 200
    */
   @Test
   void 受講生詳細の受講生で適切な値を入力したとき入力チェックに異常が発生しないこと() {
     Student student = new Student();
-    student.setId("1");
+    student.setId(1);
     student.setName("TestName");
     student.setEmailAddress("test@example.com");
     student.setAge(20);
@@ -93,21 +93,18 @@ class MainControllerTest {
   }
 
   /**
-   * student/{id} invalid ID input test 400
+   * /student/{id} invalid ID input test 400
    */
   @Test
-  void 受講生詳細の受講生でIDに数字以外を用いた時に入力チェックに掛かること() {
-    Student student = new Student();
-    student.setId("Test");
-    student.setName("TestName");
-    student.setEmailAddress("test@example.com");
-    student.setAge(20);
+  void 受講生詳細の検索をIDで検索する時_IDに数字以外を用いた時_400エラーが発生すること() throws Exception {
+    String invalidId = "Test";
 
-    Set<ConstraintViolation<Student>> violations = validator.validate(student);
+    mockMvc.perform(MockMvcRequestBuilders.get("/students/{id}", invalidId))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.validationErrors").exists());
 
-    assertThat(violations.size()).isEqualTo(1);
-    assertThat(violations).extracting("message")
-        .containsOnly("数字のみ入力するようにしてください。");
+    verify(service, times(0)).searchStudentId(Mockito.any(Integer.class));
+
 
   }
 
@@ -116,11 +113,12 @@ class MainControllerTest {
    */
   @Test
   void 受講生詳細の検索をIDで検索する時_受講生詳細がないこと() throws Exception {
-    String id = "436";
+    String idString = "436";
+    Integer id = Integer.parseInt(idString);
     when(service.searchStudentId(id))
         .thenReturn(null);
 
-    mockMvc.perform(MockMvcRequestBuilders.get("/student/436"))
+    mockMvc.perform(MockMvcRequestBuilders.get("/students/{id}", idString))
         .andExpect(status().isNotFound());
 
     verify(service, times(1)).searchStudentId(id);
@@ -128,15 +126,16 @@ class MainControllerTest {
   }
 
   /**
-   * student/{id} 500
+   * /student/{id} 500
    */
   @Test
   void 受講生詳細の検索をIDで検索する時_内部エラー発生すること() throws Exception {
-    String id = "999";
+    String idString = "999";
+    Integer id = Integer.parseInt(idString);
     when(service.searchStudentId(id))
         .thenThrow(new RuntimeException("内部サーバー エラーが発生しました。"));
 
-    mockMvc.perform(MockMvcRequestBuilders.get("/student/999"))
+    mockMvc.perform(MockMvcRequestBuilders.get("/students/999"))
         .andExpect(status().isInternalServerError());
 
     verify(service, times(1)).searchStudentId(id);
@@ -151,7 +150,7 @@ class MainControllerTest {
   @Test
   void 受講生詳細を適切に登録した時_受講生詳細情報を返ってくること() throws Exception {
     Student student = new Student();
-    student.setId("999");
+    student.setId(999);
     student.setEmailAddress("test@example.com");
     student.setAge(20);
 
@@ -171,7 +170,7 @@ class MainControllerTest {
     when(service.registerStudent(Mockito.any(StudentDetail.class)))
         .thenReturn(expectedDetail);
 
-    mockMvc.perform(MockMvcRequestBuilders.post("/registerStudent")
+    mockMvc.perform(MockMvcRequestBuilders.post("/students")
             .contentType(MediaType.APPLICATION_JSON).content(jsonBody))
         .andExpect(status().isOk())
         .andExpect(content().json(jsonBody));
@@ -186,10 +185,10 @@ class MainControllerTest {
    * @throws Exception
    */
   @Test
-  void 受講生詳細の登録した時_IDに数字以外を用いた時にバリデーションエラーが発生する() throws Exception {
+  void 受講生詳細の登録した時_不正なメールアドレスを用いた時にバリデーションエラーが発生する() throws Exception {
     Student student = new Student();
-    student.setId("Test");
-    student.setEmailAddress("test@example.com");
+    student.setId(999);
+    student.setEmailAddress("testexamplecom");
     student.setAge(20);
 
     Course course = new Course();
@@ -201,15 +200,15 @@ class MainControllerTest {
 
     String jsonBody = objectMapper.writeValueAsString(expectedDetail);
 
-    mockMvc.perform(MockMvcRequestBuilders.post("/registerStudent")
+    mockMvc.perform(MockMvcRequestBuilders.post("/students")
             .contentType(MediaType.APPLICATION_JSON).content(jsonBody))
         .andExpect(status().isBadRequest())
         .andDo(result ->
             verify(service, times(0))
                 .registerStudent(Mockito.any(StudentDetail.class)))
-        .andExpect(jsonPath("$.validationErrors['student.id']").exists())
-        .andExpect(jsonPath("$.validationErrors['student.id']")
-            .value("数字のみ入力するようにしてください。"));
+        .andExpect(jsonPath("$.validationErrors['student.emailAddress']").exists())
+        .andExpect(jsonPath("$.validationErrors['student.emailAddress']")
+            .value("有効なメールアドレスを入力してください。"));
 
   }
 
@@ -220,7 +219,7 @@ class MainControllerTest {
   @Test
   void 受講生詳細の登録した時_内部エラーが発生すること() throws Exception {
     Student student = new Student();
-    student.setId("1");
+    student.setId(1);
     student.setEmailAddress("test@example.com");
     student.setAge(20);
     Course course = new Course();
@@ -232,7 +231,7 @@ class MainControllerTest {
     when(service.registerStudent(Mockito.any(StudentDetail.class)))
         .thenThrow(new RuntimeException("内部サーバー エラーが発生しました。"));
 
-    mockMvc.perform(MockMvcRequestBuilders.post("/registerStudent")
+    mockMvc.perform(MockMvcRequestBuilders.post("/students")
         .contentType(MediaType.APPLICATION_JSON)
         .content(jsonBody))
         .andExpect(status().isInternalServerError())
@@ -250,7 +249,7 @@ class MainControllerTest {
   @Test
   void 受講生詳細を適切に更新した時_受講生詳細情報を返ってくること() throws Exception {
     Student student = new Student();
-    student.setId("999");
+    student.setId(999);
     student.setEmailAddress("test@example.com");
     student.setAge(20);
 
@@ -262,7 +261,7 @@ class MainControllerTest {
 
     String jsonBody = objectMapper.writeValueAsString(expectedDetail);
 
-    mockMvc.perform(MockMvcRequestBuilders.put("/updateStudent")
+    mockMvc.perform(MockMvcRequestBuilders.put("/students")
             .contentType(MediaType.APPLICATION_JSON).content(jsonBody))
         .andExpect(status().isOk())
         .andExpect(content().string("更新処理が成功しました。"));
@@ -279,7 +278,7 @@ class MainControllerTest {
   @Test
   void 受講生詳細を更新した時_不正なメールアドレスを入力した時にバリデーションエラーが発生すること() throws Exception {
     Student student = new Student();
-    student.setId("999");
+    student.setId(999);
     student.setEmailAddress("testexample.com");
     student.setAge(20);
 
@@ -292,7 +291,7 @@ class MainControllerTest {
 
     String jsonBody = objectMapper.writeValueAsString(expectedDetail);
 
-    mockMvc.perform(MockMvcRequestBuilders.put("/updateStudent")
+    mockMvc.perform(MockMvcRequestBuilders.put("/students")
             .contentType(MediaType.APPLICATION_JSON).content(jsonBody))
         .andExpect(status().isBadRequest())
         .andDo(result ->
@@ -312,7 +311,7 @@ class MainControllerTest {
   @Test
   void 受講生詳細の更新した時_内部エラーが発生すること() throws Exception {
     Student student = new Student();
-    student.setId("1");
+    student.setId(1);
     student.setEmailAddress("test@example.com");
     student.setAge(20);
 
@@ -328,7 +327,7 @@ class MainControllerTest {
     .when(service)
         .updateStudent(Mockito.any(StudentDetail.class));
 
-    mockMvc.perform(MockMvcRequestBuilders.put("/updateStudent")
+    mockMvc.perform(MockMvcRequestBuilders.put("/students")
             .contentType(MediaType.APPLICATION_JSON)
             .content(jsonBody))
         .andExpect(status().isInternalServerError())
@@ -348,7 +347,7 @@ class MainControllerTest {
     when(service.searchStudentList(expectedName, null, null,null,null))
         .thenReturn(expectedDetails);
 
-    mockMvc.perform(MockMvcRequestBuilders.get("/studentList?name=Test"))
+    mockMvc.perform(MockMvcRequestBuilders.get("/students?name=Test"))
         .andExpect(status().isOk());
 
     verify(service, times(1))
@@ -369,7 +368,7 @@ class MainControllerTest {
         .thenReturn(expectedDetails);
 
     mockMvc.perform(MockMvcRequestBuilders.get(
-        "/studentList?name=Tommy&emailAddress=bommytums@example.com&gender=Male&courseName=Show&applicationStatus=Expelled"))
+        "/students?name=Tommy&emailAddress=bommytums@example.com&gender=Male&courseName=Show&applicationStatus=Expelled"))
         .andExpect(status().isOk());
 
     verify(service, times(1))

@@ -33,7 +33,7 @@ class MainRepositoryTest {
 
   @Test
   void 受講生情報をのIDで取得処理が行えること() {
-    Student actual = sut.fetchById("1");
+    Student actual = sut.fetchById(1);
     assertThat(actual).isNotNull();
     assertThat(actual).extracting(
             Student::getId,
@@ -47,7 +47,7 @@ class MainRepositoryTest {
             Student::getRemark,
             Student::isWasDeleted)
         .containsExactly(
-            "1",
+            1,
             "山田太郎",
             "ヤマダタロウ",
             "タロウ",
@@ -67,7 +67,9 @@ class MainRepositoryTest {
 
   @Test
   void コース情報をのIDで取得処理が行えること() {
-    List<Course> actual = sut.fetchCourseById("5");
+    List<Course> actual = sut.fetchCourseById(5);
+    LocalDate expectedStartDate = LocalDate.of(2023,12,1);
+    LocalDate expectedEndDate = LocalDate.of(2024,4,1);
     assertThat(actual).isNotNull();
     assertThat(actual).extracting(
         Course::getId,
@@ -76,11 +78,11 @@ class MainRepositoryTest {
         Course::getCourseStartAt,
         Course::getCourseEndAt)
         .containsExactly(tuple(
-        "9",
-        "5",
+        9,
+        5,
         "AWSコース",
-        "2023-12-01 12:00:00",
-        "2024-04-01 18:00:00"));
+        expectedStartDate,
+        expectedEndDate));
   }
 
   @Test
@@ -107,10 +109,10 @@ class MainRepositoryTest {
   @Test
   void コースの新規登録が行えること() {
     Course course = new Course();
-    course.setStudentId("1");
+    course.setStudentId(1);
     course.setCourseName("Test Course");
-    course.setCourseStartAt(String.valueOf(LocalDate.now()));
-    course.setCourseEndAt(String.valueOf(LocalDate.now().plusYears(1)));
+    course.setCourseStartAt(LocalDate.now());
+    course.setCourseEndAt(LocalDate.now().plusYears(1));
 
     sut.registerCourse(course);
 
@@ -121,7 +123,7 @@ class MainRepositoryTest {
 
   @Test
   void 受講生情報の更新を適切に行うこと() {
-    Student actual = sut.fetchById("1");
+    Student actual = sut.fetchById(1);
     assertThat(actual).isNotNull();
     assertThat(actual).extracting(
             Student::getName,
@@ -137,7 +139,7 @@ class MainRepositoryTest {
 
     sut.updateStudent(actual);
 
-    Student expected = sut.fetchById("1");
+    Student expected = sut.fetchById(1);
     assertThat(expected).extracting(
             Student::getName,
             Student::getEmailAddress)
@@ -149,7 +151,7 @@ class MainRepositoryTest {
 
   @Test
   void コース名の更新を適切に行うこと() {
-    List<Course> preUpdateCourse = sut.fetchCourseById("5");
+    List<Course> preUpdateCourse = sut.fetchCourseById(5);
     Course courseToUpdate = preUpdateCourse.get(0);
     assertThat(preUpdateCourse).isNotNull();
     assertThat(courseToUpdate).extracting(
@@ -157,17 +159,17 @@ class MainRepositoryTest {
             Course::getStudentId,
             Course::getCourseName)
         .containsExactly(
-            "9",
-            "5",
+            9,
+            5,
             "AWSコース");
 
     String expectedName = "Crash Test Course";
     courseToUpdate.setCourseName(expectedName);
 
     sut.updateCourseName(courseToUpdate);
-    sut.fetchCourseById("5");
+    sut.fetchCourseById(5);
 
-    List<Course> actualUpdateCourse = sut.fetchCourseById("5");
+    List<Course> actualUpdateCourse = sut.fetchCourseById(5);
     Course actualCourse = actualUpdateCourse.get(0);
 
     assertThat(actualCourse).extracting(
@@ -175,8 +177,8 @@ class MainRepositoryTest {
         Course::getStudentId,
         Course::getCourseName)
         .containsExactly(
-            "9",
-            "5",
+            9,
+            5,
             "Crash Test Course");
   }
 
@@ -188,18 +190,18 @@ class MainRepositoryTest {
 
   @Test
   void 申込状況をコースIDで取得処理が行えること() {
-    String courseId = new String("2");
-    List<String> courseIdList = List.of(courseId);
+    Integer courseId = 2;
+    List<Integer> courseIdList = List.of(courseId);
 
     List<ApplicationStatus> actualStatus = sut.fetchStatusByCourseIds(courseIdList);
     assertThat(actualStatus).isNotNull();
-    assertThat(actualStatus.get(0).getCourseId()).isEqualTo("2");
+    assertThat(actualStatus.get(0).getCourseId()).isEqualTo(2);
     assertThat(actualStatus).extracting(
         ApplicationStatus::getId,
         ApplicationStatus::getCourseId,
         ApplicationStatus::getApplicationStatus)
         .containsExactly(tuple(
-            "2","2","受講中"
+            2, 2,"受講中"
         ));
 
   }
@@ -207,8 +209,8 @@ class MainRepositoryTest {
   @Test
   void 申込状況の登録が適切に行えること() {
     ApplicationStatus status = new ApplicationStatus();
-    status.setId("1");
-    status.setCourseId("1");
+    status.setId(1);
+    status.setCourseId(1);
     status.setApplicationStatus("本申込");
 
     sut.registerStatus(status);
@@ -222,7 +224,7 @@ class MainRepositoryTest {
   @Test
   void 申込状況の更新が適切に行えること() {
     ApplicationStatus expected = new ApplicationStatus();
-    expected.setCourseId("1");
+    expected.setCourseId(1);
     expected.setApplicationStatus("仮申込");
 
     sut.registerStatus(expected);
@@ -230,7 +232,7 @@ class MainRepositoryTest {
     assertThat(expected).extracting(
         ApplicationStatus::getCourseId,
         ApplicationStatus::getApplicationStatus)
-        .containsExactly("1","仮申込");
+        .containsExactly(1,"仮申込");
 
     ApplicationStatus actual = new ApplicationStatus();
 
@@ -242,21 +244,20 @@ class MainRepositoryTest {
     assertThat(actual).extracting(
         ApplicationStatus::getCourseId,
         ApplicationStatus::getApplicationStatus)
-        .containsExactly("1","本申込");
+        .containsExactly(1,"本申込");
 
   }
 
   @Test
   void 新規コース登録時にIDが自動採番されること() {
     Course course = new Course();
-    course.setStudentId("322");
+    course.setStudentId(322);
     course.setCourseName("Test");
 
     sut.registerCourse(course);
 
     assertThat(course.getId()).isNotNull();
-    assertThat(course.getId()).isNotEmpty();
-    assertThat(Integer.parseInt(course.getId())).isGreaterThan(0);
+    assertThat(course.getId()).isGreaterThan(0);
 
   }
 

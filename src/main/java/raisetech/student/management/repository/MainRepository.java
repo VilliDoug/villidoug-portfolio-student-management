@@ -26,14 +26,7 @@ public interface MainRepository {
    * @param id　受講生ID
    * @return　受講生
    */
-  Student fetchById(String id);
-
-  /**
-   * 受講生の削除フラッグに関した検索を行います。
-   *
-   * @return　受講生（削除無し）
-   */
-  List<Student> searchNotDeletedStudent();
+  Student fetchById(int id);
 
   /**
    * 条件付き検索を行います。
@@ -64,7 +57,7 @@ public interface MainRepository {
    * @param studentId
    * @return コースIDに紐づく受講生情報
    */
-  List<Course> fetchCourseById(String studentId);
+  List<Course> fetchCourseById(int studentId);
 
   /**
    * 受講生を新規登録します。IDに関しては自動採番を行う。
@@ -106,7 +99,7 @@ public interface MainRepository {
    *
    * @return　申込状況
    */
-  List<ApplicationStatus> fetchStatusByCourseIds(List<String> courseId);
+  List<ApplicationStatus> fetchStatusByCourseIds(List<Integer> courseId);
 
   /**
    *
@@ -125,13 +118,13 @@ public interface MainRepository {
    * @param studentId
    * @return 受講生IDで抽出したコース情報
    */
-  List<Course> searchCoursesByStudentId(List<String> studentId);
+  List<Course> searchCoursesByStudentId(List<Integer> studentId);
 
   /**
    *
    * @param studentId
    * @return 受講生IDで抽出した申込状況
    */
-  List<ApplicationStatus> searchStatusByStudentId(List<String> studentId);
+  List<ApplicationStatus> searchStatusByStudentId(List<Integer> studentId);
 
 }
