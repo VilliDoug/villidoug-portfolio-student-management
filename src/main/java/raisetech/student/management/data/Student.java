@@ -10,14 +10,13 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
-@Schema(description = "受講生")
+@Schema(description = "受講生情報")
 @Getter
 @Setter
 
 public class Student {
 
-  @Pattern(regexp = "^\\d+$", message = "数字のみ入力するようにしてください。" )
-  private String id;
+  private Integer id;
 
   @Size (min = 2, max = 50, message = "名前は2文字以上50文字以下で入力してください。")
   private String name;

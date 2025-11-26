@@ -50,7 +50,7 @@ class MainServiceTest {
     List<ApplicationStatus> statusList = List.of(mockStatus);
     List<StudentDetail> expectedDetails = new ArrayList<>();
 
-    when(mockStudent.getId()).thenReturn("1");
+    when(mockStudent.getId()).thenReturn(1);
 
     when(repository.searchStudentByCriteria(
         null, null, null, null, null))
@@ -76,10 +76,10 @@ class MainServiceTest {
   @Test
   void 受講生詳細の検索_リポジトリからIDに紐づく検索処理が適切に呼び出されていること() {
     Student student = new Student();
-    student.setId("555");
+    student.setId(555);
     List<Student> studentList = List.of(student);
     Course course = new Course();
-    course.setId("2");
+    course.setId(2);
     List<Course> courseList = List.of(course);
     List<ApplicationStatus> statusList = new ArrayList<>();
     when(repository.fetchById(student.getId())).thenReturn(student);
@@ -106,7 +106,7 @@ class MainServiceTest {
   @Test
   void 受講生詳細の登録が適切に実装していること() {
     Student student = new Student();
-    student.setId("555");
+    student.setId(555);
     student.setName("Gordon");
     List<Student> studentList = List.of(student);
 
@@ -136,13 +136,13 @@ class MainServiceTest {
   @Test
   void 受講生詳細の更新処理が適切に実装していること() {
     Student student = new Student();
-    student.setId("777");
+    student.setId(777);
     Course course = new Course();
-    course.setId("123");
+    course.setId(123);
     course.setCourseName("Slot Mechanic");
     ApplicationStatus status = new ApplicationStatus();
-    status.setId("444");
-    status.setCourseId("123");
+    status.setId(444);
+    status.setCourseId(123);
     status.setApplicationStatus("仮申込");
     CourseDetail courseDetail = new CourseDetail(course, status);
     List<CourseDetail> courseDetailList = List.of(courseDetail);
@@ -161,13 +161,13 @@ class MainServiceTest {
   @Test
   void 受講生詳細の登録_初期化処理が行われること() {
     Student student = new Student();
-    student.setId("888");
+    student.setId(888);
     Course course = new Course();
 
     sut.initStudentCourse(course, student);
 
     assertEquals(student.getId(), course.getStudentId());
-    assertEquals(String.valueOf(LocalDate.now()), course.getCourseStartAt());
+    assertEquals(LocalDate.now(), course.getCourseStartAt());
   }
 
 }

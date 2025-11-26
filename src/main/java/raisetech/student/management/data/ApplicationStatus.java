@@ -10,8 +10,8 @@ import lombok.Setter;
 
 public class ApplicationStatus {
 
-    private String id;
-    private String courseId;
+    private Integer id;
+    private Integer courseId;
     private String applicationStatus;
 
 }
