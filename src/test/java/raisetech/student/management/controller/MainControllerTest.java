@@ -255,13 +255,20 @@ class MainControllerTest {
 
     Course course = new Course();
     course.setCourseName("Crash Test Course");
-    List<Course> courseList = List.of(course);
+
+    CourseDetail courseDetail = new CourseDetail();
+    courseDetail.setCourse(course);
+    List<CourseDetail> courseDetailList = List.of(courseDetail);
+
 
     StudentDetail expectedDetail = new StudentDetail();
+    expectedDetail.setStudent(student);
+    expectedDetail.setCourseDetailList(courseDetailList);
+
 
     String jsonBody = objectMapper.writeValueAsString(expectedDetail);
 
-    mockMvc.perform(MockMvcRequestBuilders.put("/students")
+    mockMvc.perform(MockMvcRequestBuilders.put("/students/{id}", 999)
             .contentType(MediaType.APPLICATION_JSON).content(jsonBody))
         .andExpect(status().isOk())
         .andExpect(content().string("更新処理が成功しました。"));
@@ -291,7 +298,7 @@ class MainControllerTest {
 
     String jsonBody = objectMapper.writeValueAsString(expectedDetail);
 
-    mockMvc.perform(MockMvcRequestBuilders.put("/students")
+    mockMvc.perform(MockMvcRequestBuilders.put("/students/{id}", 999)
             .contentType(MediaType.APPLICATION_JSON).content(jsonBody))
         .andExpect(status().isBadRequest())
         .andDo(result ->
@@ -317,9 +324,14 @@ class MainControllerTest {
 
     Course course = new Course();
     course.setCourseName("Crash Test Course");
-    List<Course> courseList = List.of(course);
+
+    CourseDetail courseDetail = new CourseDetail();
+    courseDetail.setCourse(course);
+    List<CourseDetail> courseDetailList = List.of(courseDetail);
 
     StudentDetail expectedDetail = new StudentDetail();
+    expectedDetail.setStudent(student);
+    expectedDetail.setCourseDetailList(courseDetailList);
 
     String jsonBody = objectMapper.writeValueAsString(expectedDetail);
 
@@ -327,7 +339,7 @@ class MainControllerTest {
     .when(service)
         .updateStudent(Mockito.any(StudentDetail.class));
 
-    mockMvc.perform(MockMvcRequestBuilders.put("/students")
+    mockMvc.perform(MockMvcRequestBuilders.put("/students/{id}", 1)
             .contentType(MediaType.APPLICATION_JSON)
             .content(jsonBody))
         .andExpect(status().isInternalServerError())
