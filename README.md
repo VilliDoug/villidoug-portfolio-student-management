@@ -468,7 +468,7 @@ deactivate Ctrl
 
 ## 今後の展望
 
-・現在、デプロイを学習しており(AWSのEC2・RDSなど, CI:CD, GitHubActions, Docker)、
+・現在、デプロイを学習しており(CI:CD, GitHubActions, Docker)、
 早いうちにデプロイをできるように進んでいきます。
 
 ・デプロイ後は、フロントエンド(JavaScript → React → Next.js)の学習をして、実装するつもりです。<br/>
