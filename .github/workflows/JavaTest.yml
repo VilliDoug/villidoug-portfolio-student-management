@@ -2,9 +2,11 @@ name: Java CD with Gradle
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "release" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "release" ]
+
+# AI review trigger
 
 env:
   EC2_USER: 'ec2-user'
@@ -36,6 +38,7 @@ jobs:
 
     - name: Build with Gradle Wrapper
       run: ./gradlew bootJar
+
 
     - name: SCP Copy Application to EC2
       env:
