@@ -41,7 +41,7 @@ jobs:
       env:
         PRIVATE: ${{ secrets.AWS_EC2_PRIVATE_KEY }}
       run: |
-        echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+        echo -e "$PRIVATE_KEY" > private_key && chmod 600 private_key
         scp -o StrictHostKeyChecking=no -i private_key $SRC_PATH $EC2_USER@$EC2_HOST:$DEST_PATH       
 
     - name: SSH Application Deploy
