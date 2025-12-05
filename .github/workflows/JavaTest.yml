@@ -2,9 +2,9 @@ name: Java CD with Gradle
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "release" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "release" ]
 
 env:
   EC2_USER: 'ec2-user'
