@@ -6,11 +6,10 @@ on:
   pull_request:
     branches: [ "release" ]
 
-# AI review trigger
 
 env:
   EC2_USER: 'ec2-user'
-  EC2_HOST: '18.183.70.57'
+  EC2_HOST: '3.112.41.87'
   SRC_PATH: 'build/libs/*.jar'
   DEST_PATH: '/home/ec2-user/student.management.jar'
 
@@ -53,12 +52,40 @@ jobs:
         host: ${{ env.EC2_HOST }}
         username: ${{ env.EC2_USER }}
         key: ${{ secrets.AWS_EC2_PRIVATE_KEY }}
-        envs: DEST_PATH
+        envs: DEST_PATH,DB_HOST,DB_USERNAME,DB_PASSWORD
         script: |
           sudo yum update -y
+          cat <<EOF | sudo tee /etc/sysconfig/student.management
+          spring.datasource.url=jdbc:mysql://${DB_HOST}/student_management?autoReconnect=true&useSSL=false
+          spring.datasource.username=${DB_USERNAME}
+          spring.datasource.password=${DB_PASSWORD}
+          EOF
+          
+          cat <<EOL | sudo tee /etc/systemd/system/student.management.service
+          [Unit]
+          Description = student.management App
+          
+          [Service]
+          ExecStart = java -jar ${DEST_PATH}
+          EnvironmentFile = /etc/sysconfig/student.management 
+          Restart = no
+          Type = simple
+          User = ec2-user
+          Group = ec2-user
+          SuccessExitStatus = 143
+          
+          [Install]
+          WantedBy = multi-user.target
+          EOL
+          
+          sudo systemctl daemon-reload
+          
           if sudo systemctl status student.management 2>&1 | grep "Active: active (running)" ; then
             sudo systemctl restart student.management
           else
             sudo systemctl start student.management
           fi
-          
+      env:
+        DB_HOST: ${{ secrets.DB_HOST }}
+        DB_USERNAME: ${{ secrets.DB_USERNAME }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
