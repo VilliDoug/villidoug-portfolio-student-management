@@ -44,6 +44,6 @@ out/
 ## Miscellaneous
 
 *.log
-application.properties
+src/main/resources/application.properties
 workspace.xml
 mybatis-3-mapper.dtd
