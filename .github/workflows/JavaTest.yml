@@ -37,9 +37,13 @@ jobs:
 
     - name: Test with Gradle Wrapper
       run: |
-        ./gradlew test -Dspring.datasource.url="jdbc:mysql://${DB_HOST}/student_management?autoReconnect=true&useSSL=false" \
+        ./gradlew test -Dspring.datasource.url="jdbc:mysql://${DB_HOST}/student_management \
                        -Dspring.datasource.username="${DB_USERNAME}" \
                        -Dspring.datasource.password="${DB_PASSWORD}"
+        env:
+        DB_HOST: ${{ secrets.DB_HOST }}
+        DB_USERNAME: ${{ secrets.DB_USERNAME }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
 
     - name: Build with Gradle Wrapper
       run: ./gradlew bootJar
