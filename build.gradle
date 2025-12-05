@@ -25,6 +25,15 @@ repositories {
 	mavenCentral()
 }
 
+sourceSets {
+    main {
+        resources {
+            srcDir 'src/main/java'
+            include '**/*.xml'
+        }
+    }
+}
+
 dependencies {
     //  Spring Boot
 	implementation 'org.springframework.boot:spring-boot-starter-web'
